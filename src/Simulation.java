@@ -53,18 +53,23 @@ public class Simulation {
             );
         }
 
-
         double nano = nanoTime();
-        for(int h = 0; h < 100; h++){
+        int lc = 1;
+        for(int h = 0; h < lc; h++){
 
             // add bodies to celestial octree
             CelestialOctree tree = new CelestialOctree(SECTION_SIZE * 2);
             for(int i = 0; i < NUMBER_OF_BODIES; i++)
                 tree.addBody(bodies[i]);
+
+            int itc = 0;
+            for(Body b : tree) {
+                itc++;
+            }
+            System.out.println(itc);
         }
         nano = nanoTime() - nano;
-        System.out.println(nano / 100 / 1e6);
-
+        System.out.println(nano / lc / 1e6);
     }
 
 }

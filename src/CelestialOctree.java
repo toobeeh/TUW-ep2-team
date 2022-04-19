@@ -1,7 +1,9 @@
+import java.util.Iterator;
+
 /**
  * Octree data structure which is used to implement the barnes-hut algorithm in a 3d space
  */
-public class CelestialOctree {
+public class CelestialOctree implements Iterable<Body> {
 
     private CelestialOctreeNode rootSector = null;
     private double rootSectorSize;
@@ -27,6 +29,10 @@ public class CelestialOctree {
 
         // else add body to root node
         else this.rootSector.addBody(body);
+    }
+
+    public Iterator<Body> iterator() {
+        return this.rootSector == null ? null : this.rootSector.iterator();
     }
 
 
