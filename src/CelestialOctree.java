@@ -27,7 +27,6 @@ public class CelestialOctree {
 
         // else add body to root node
         else this.rootSector.addBody(body);
-
     }
 
 

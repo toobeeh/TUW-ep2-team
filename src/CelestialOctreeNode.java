@@ -1,3 +1,5 @@
+import java.util.Iterator;
+
 public class CelestialOctreeNode {
 
     /*
@@ -12,6 +14,9 @@ public class CelestialOctreeNode {
 
     /** Other sectors/bodies contained in this sector */
     private CelestialOctreeNode[] subNodes;
+
+    /** Element that holds next iteration eleemnt */
+    private CelestialOctreeNode next = null;
 
     /** Approximated body of this sector */
     private Body sectorApproximation;
@@ -49,20 +54,20 @@ public class CelestialOctreeNode {
         if(this.isBody){
 
             // get the sector index where sector body belongs to
-            int subindex = this.calcSectorIndexOf(this.sectorApproximation);
+            int subSectorIndex = this.sectorApproximation.getBarnesHutSubsectorIndex(this.sectorCenter);
 
             // add to subsector
-            this.addBodyToSubsector(subindex, this.sectorApproximation);
+            this.addBodyToSubSector(subSectorIndex, this.sectorApproximation);
 
             // mark that this sector doesn't just contain of a single body anymore
             this.isBody = false;
         }
 
         // get sector index of the actual to-add body
-        int subindex = this.calcSectorIndexOf(body);
+        int subSectorIndex = body.getBarnesHutSubsectorIndex(this.sectorCenter);
 
         // add body there
-        this.addBodyToSubsector(subindex, body);
+        this.addBodyToSubSector(subSectorIndex, body);
 
         // update sector approximation
         this.sectorApproximation = this.sectorApproximation.merge(body);
@@ -73,7 +78,7 @@ public class CelestialOctreeNode {
      * @param subindex the subsector index coordinates
      * @param body the body to add
      */
-    private void addBodyToSubsector(int subindex, Body body){
+    private void addBodyToSubSector(int subindex, Body body){
 
         // if subsector is not initialized, create new with body as body approximation
         if(this.subNodes[subindex] == null) {
@@ -88,56 +93,26 @@ public class CelestialOctreeNode {
         else this.subNodes[subindex].addBody(body);
     }
 
-    /**
-     * Gets a sub-sector of this sector at a specified index
-     * @param nodePosition position of the sector node
-     * @return a sector / body at specified index if present, else null
-     */
-    public CelestialOctreeNode subNodeAt(int nodePosition){
-        return subNodes[nodePosition];
-    }
-
-    /**
-     * Calculates in which of this sectors sub-sectors a body would fit
-     * @param body the body to check on
-     * @return sector index from 0-7 or -1 if body is out of this sector
-     */
-    private int calcSectorIndexOf(Body body){
-
-        // calculate body relative position to sector center
-        double centerSideNormDistance = this.sectorSize / 2;
-        double[] relativeBodyPosition = body.getMassCenter().minus(this.sectorCenter).asComponentArray();
-
-        // check if mass center is in sector bounds
-        if(Math.abs(relativeBodyPosition[0]) > centerSideNormDistance
-                || Math.abs(relativeBodyPosition[1]) > centerSideNormDistance
-                || Math.abs(relativeBodyPosition[2]) > centerSideNormDistance) {
-            throw new Error("Body center was out of sector bounds");
-        }
-
-        // else calculate coordinates in octree cube
-        int x = relativeBodyPosition[0] < 0 ? 0 : 1;
-        int y = relativeBodyPosition[1] < 0 ? 0 : 1;
-        int z = relativeBodyPosition[2] < 0 ? 0 : 1;
-        int sector = Integer.parseInt(x + "" + y + "" + z, 2);
-
-        return sector;
-    }
-
     private Vector3 calcSubSectorCenter(int vectorCoordinates) {
 
+        /*
         // check if vector coordinates are valid
-        if(vectorCoordinates > 8 || vectorCoordinates < 0) throw new Error("Coordinates for subsector were out of bounds");
+        if(vectorCoordinates > 8 || vectorCoordinates < 0){
+            throw new Error("Coordinates for subsector were out of bounds");
+        }
+        */
 
-        // get binary representation ~ add 8 to get a 4-digit code, then cut off first index
-        String binaryCoords = Integer.toBinaryString(vectorCoordinates + 8).substring(1);
+        // mask bits and get subsector
+        boolean x = (vectorCoordinates & 4) == 4;
+        boolean y = (vectorCoordinates & 2) == 2;
+        boolean z = (vectorCoordinates & 1) == 1;
 
         // calc vector components
         double distanceToSubCenters = this.sectorSize / 4;
         Vector3 subCenter = this.sectorCenter.plus(new Vector3(
-                binaryCoords.charAt(0) == '0' ? -distanceToSubCenters : distanceToSubCenters,
-                binaryCoords.charAt(1) == '0' ? -distanceToSubCenters : distanceToSubCenters,
-                binaryCoords.charAt(2) == '0' ? -distanceToSubCenters : distanceToSubCenters
+                x ? distanceToSubCenters : -distanceToSubCenters,
+                y ? distanceToSubCenters : -distanceToSubCenters,
+                z ? distanceToSubCenters : -distanceToSubCenters
         ));
         return subCenter;
     }

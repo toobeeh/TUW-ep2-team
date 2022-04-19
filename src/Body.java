@@ -15,7 +15,6 @@ public class Body {
 
     // Returns the distance between the mass centers of this body and the specified body 'b'.
     public double distanceTo(Body b) {
-
         return this.massCenter.distanceTo(b.massCenter);
     }
 
@@ -67,6 +66,7 @@ public class Body {
      * @return mass center of this body
      */
     public Vector3 getMassCenter(){
+
         return this.massCenter;
     }
 
@@ -105,11 +105,21 @@ public class Body {
     }
 
     /**
-     * Gets the mass of this body
-     * @return mass as double
+     * Calculates the index of a subsector in a given barnes-hut-sector
+     * @param sectorCenter the sector center relative to which the body's position is determined
+     * @return the sector index, binary representating x-y-z position
      */
-    public double mass() {
-        return this.mass;
+    public int getBarnesHutSubsectorIndex(Vector3 sectorCenter){
+
+        // calculate body relative position to sector center
+        double[] relativeBodyPosition = this.massCenter.minus(sectorCenter).asComponentArray();
+
+        int x = relativeBodyPosition[0] < 0 ? 0 : 1;
+        int y = relativeBodyPosition[1] < 0 ? 0 : 1;
+        int z = relativeBodyPosition[2] < 0 ? 0 : 1;
+        int sector = z * 1 + y * 2 + x * 4;
+
+        return sector;
     }
 
 
