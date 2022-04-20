@@ -27,6 +27,7 @@ public class Body {
 
         Vector3 direction = b.massCenter.minus(this.massCenter);
         double distance = direction.length();
+        if(distance == 0) return new Vector3(0,0,0);
         direction.normalize();
         double force = Simulation.G * this.mass * b.mass / (distance * distance);
         return direction.times((force));

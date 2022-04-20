@@ -217,4 +217,33 @@ public class CelestialOctreeNode implements Iterable {
         return subCenter;
     }
 
+    public Vector3 forceOn(Body b){
+
+        // if sector matches barnes hut approximation criteria, use the sector approximation
+        if(this.sectorSize / b.distanceTo(this.sectorApproximation) < Simulation.BARNES_HUT_TRESHOLD){
+            var gf = b.gravitationalForce(this.sectorApproximation);
+            return gf;
+        }
+
+        // if it is a body
+        else if(this.isBody ){
+            var gf = b.gravitationalForce(this.sectorApproximation);
+            return gf;
+        }
+
+        // else return force added of every subsector
+        else {
+            Vector3 force = new Vector3(0,0,0);
+
+            // loop over sub-sectors and collect force recursively
+            for(CelestialOctreeNode sector : this.subNodes){
+                if(sector != null) {
+                    var fo = sector.forceOn(b);
+                    force = force.plus(fo);
+                }
+            }
+
+            return force;
+        }
+    }
 }

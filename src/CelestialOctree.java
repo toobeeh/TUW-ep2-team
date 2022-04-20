@@ -31,8 +31,15 @@ public class CelestialOctree implements Iterable<Body> {
         else this.rootSector.addBody(body);
     }
 
+    public Vector3 forceOn(Body body){
+        if(this.rootSector == null) throw new Error("Tree has no bodies");
+        return this.rootSector.forceOn(body);
+    }
+
     public Iterator<Body> iterator() {
-        return this.rootSector == null ? null : this.rootSector.iterator();
+
+        if(this.rootSector == null) throw new Error("Tree has no bodies");
+        return this.rootSector.iterator();
     }
 
 

@@ -1,7 +1,9 @@
 import codedraw.CodeDraw;
 
+import java.awt.*;
 import java.util.Random;
 
+import static java.lang.System.currentTimeMillis;
 import static java.lang.System.nanoTime;
 
 public class Simulation {
@@ -20,17 +22,18 @@ public class Simulation {
     public static final double SUN_RADIUS = 696340e3; // meters
     public static final double EARTH_MASS = 5.972e24; // kilograms
     public static final double EARTH_RADIUS = 6371e3; // meters
+    public static final double BARNES_HUT_TRESHOLD = 1; // parameter t in barnes hut algorithm
 
     // set some system parameters
     public static final double SECTION_SIZE = 2 * AU; // the size of the square region in space
-    public static final int NUMBER_OF_BODIES = 100000;
+    public static final int NUMBER_OF_BODIES = 22;
     public static final double OVERALL_SYSTEM_MASS = 20 * SUN_MASS; // kilograms
 
     // all quantities are based on units of kilogram respectively second and meter.
 
     public static void main(String[] args) {
 
-        //CodeDraw cd = new CodeDraw();
+        CodeDraw cd = new CodeDraw();
         Random random = new Random(2022);
 
         // store bodies in an array
@@ -53,23 +56,39 @@ public class Simulation {
             );
         }
 
-        double nano = nanoTime();
-        int lc = 1;
-        for(int h = 0; h < lc; h++){
+
+        long lastRef = currentTimeMillis();
+        for(int seconds = 0; true; seconds++){
 
             // add bodies to celestial octree
             CelestialOctree tree = new CelestialOctree(SECTION_SIZE * 2);
             for(int i = 0; i < NUMBER_OF_BODIES; i++)
                 tree.addBody(bodies[i]);
 
-            int itc = 0;
+
+            // apply force exterted on each of the bodies and move them
             for(Body b : tree) {
-                itc++;
+                var force = tree.forceOn(b);
+                b.move(force);
             }
-            System.out.println(itc);
+
+            // update codedraw every 100s
+            if(seconds % 3600 == 0){
+
+                // clear codedraw
+                cd.clear(Color.BLACK);
+
+                // draw planets
+                for(Body b : tree) b.draw(cd);
+
+                // show updated positions
+                cd.show();
+
+                long thisRef = currentTimeMillis();
+                System.out.println(thisRef - lastRef);
+                lastRef = thisRef;
+            }
         }
-        nano = nanoTime() - nano;
-        System.out.println(nano / lc / 1e6);
     }
 
 }
