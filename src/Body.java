@@ -54,23 +54,6 @@ public class Body {
         this.currentMovement = newMovement;
     }
 
-    // Returns the approximate radius of this body.
-    // (It is assumed that the radius r is related to the mass m of the body by r = m ^ 0.5,
-    // where m and r measured in solar units.)
-    public double radius() {
-
-        return SpaceDraw.massToRadius(this.mass);
-    }
-
-    /**
-     * mass center getter
-     * @return mass center of this body
-     */
-    public Vector3 getMassCenter(){
-
-        return this.massCenter;
-    }
-
     // Returns a new body that is formed by the collision of this body and 'b'. The impulse
     // of the returned body is the sum of the impulses of 'this' and 'b'.
     public Body merge(Body b) {

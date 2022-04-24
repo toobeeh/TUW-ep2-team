@@ -1,89 +1,6 @@
 import java.util.Iterator;
 
 /**
- * Iterator to loop over all bodies in a sector
- */
-class CONIterator implements Iterator<Body>{
-
-    CelestialOctreeNode[] nodes;
-    int currentIndex;
-    Body nextBody;
-    Iterator<Body> currentIterator;
-
-    /**
-     * Constructor of a sector iteration if the sector contains multiple bodies (and subsectors)
-     * @param subSectors
-     */
-    public CONIterator(CelestialOctreeNode[] subSectors){
-        this.nodes = subSectors;
-        this.currentIndex = 0;
-        this.currentIterator = null;
-        this.getNextBody();
-    }
-
-    /**
-     * Costructor of a sector iteration if the sector consists only of a single body (and has no subsectors)
-     * @param sectorBody
-     */
-    public CONIterator(Body sectorBody){
-        this.nextBody = sectorBody;
-        this.nodes = new CelestialOctreeNode[0];
-        this.currentIterator = null;
-        this.currentIndex = 0;
-    }
-
-    /**
-     * Get the next body beyond all nodes
-     */
-    private void getNextBody() {
-
-        // reset current body
-        this.nextBody = null;
-
-        // find next node with iterator that has a next
-        while(this.currentIndex < this.nodes.length && this.nextBody == null){
-
-            // if current index points to an instance
-            if (this.nodes[this.currentIndex] != null){
-
-                // if current iterator isnt set, get next node and its iterator
-                if(this.currentIterator == null) this.currentIterator = this.nodes[this.currentIndex].iterator();
-
-                // get from iterator and check if it's empty now
-                this.nextBody = currentIterator.next();
-                if(!this.currentIterator.hasNext()){
-                    this.currentIterator = null;
-                    currentIndex++;
-                }
-            }
-
-            // else just try to go to a further node
-            else this.currentIndex++;
-        }
-    }
-
-    /**
-     * implementation of iterator interface
-     * @return if this sector iteration has a body left
-     */
-    @Override
-    public boolean hasNext() {
-        return this.nextBody != null;
-    }
-
-    /**
-     * implementation of iterator interface
-     * @return the next body of this sector iteration
-     */
-    @Override
-    public Body next() {
-        Body currentNext = this.nextBody;
-        this.getNextBody();
-        return currentNext;
-    }
-}
-
-/**
  * Node of an octree used for the barnes-hut-algorithm
  */
 public class CelestialOctreeNode implements Iterable {
@@ -100,9 +17,6 @@ public class CelestialOctreeNode implements Iterable {
 
     /** Other sectors/bodies contained in this sector */
     private CelestialOctreeNode[] subNodes;
-
-    /** Element that holds next iteration eleemnt */
-    private CelestialOctreeNode next = null;
 
     /** Approximated body of this sector */
     private Body sectorApproximation;
@@ -221,14 +135,13 @@ public class CelestialOctreeNode implements Iterable {
 
         // if sector matches barnes hut approximation criteria, use the sector approximation
         if(this.sectorSize / b.distanceTo(this.sectorApproximation) < Simulation.BARNES_HUT_TRESHOLD){
-            var gf = b.gravitationalForce(this.sectorApproximation);
-            return gf;
+
+            return b.gravitationalForce(this.sectorApproximation);
         }
 
         // if it is a body
         else if(this.isBody ){
-            var gf = b.gravitationalForce(this.sectorApproximation);
-            return gf;
+            return b.gravitationalForce(this.sectorApproximation);
         }
 
         // else return force added of every subsector
